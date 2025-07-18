@@ -12,7 +12,6 @@ public class FacultyService {
 
     private final FacultyRepository facultyRepository;
 
-    @Autowired
     public FacultyService(FacultyRepository facultyRepository) {
         this.facultyRepository = facultyRepository;
     }
@@ -26,10 +25,9 @@ public class FacultyService {
     }
 
     public Faculty updateFaculty(Faculty faculty) {
-        if (facultyRepository.existsById(faculty.getId())) {
-            return facultyRepository.save(faculty);
-        }
-        return null;
+        return facultyRepository.findById(faculty.getId())
+                .map(f -> facultyRepository.save(faculty))
+                .orElse(null);
     }
 
     public void deleteFaculty(Long id) {

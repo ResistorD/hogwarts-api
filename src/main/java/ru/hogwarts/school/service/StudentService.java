@@ -12,7 +12,6 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
 
-    @Autowired
     public StudentService(StudentRepository studentRepository) {
         this.studentRepository = studentRepository;
     }
@@ -26,10 +25,9 @@ public class StudentService {
     }
 
     public Student updateStudent(Student student) {
-        if (studentRepository.existsById(student.getId())) {
-            return studentRepository.save(student);
-        }
-        return null;
+        return studentRepository.findById(student.getId())
+                .map(s -> studentRepository.save(student))
+                .orElse(null);
     }
 
     public void deleteStudent(Long id) {
