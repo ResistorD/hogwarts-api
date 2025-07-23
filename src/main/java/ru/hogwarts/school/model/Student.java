@@ -6,6 +6,9 @@ import jakarta.persistence.*;
 @Entity
 public class Student {
 
+    @OneToOne(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Avatar avatar;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,6 +31,14 @@ public class Student {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public Avatar getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(Avatar avatar) {
+        this.avatar = avatar;
+    }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
