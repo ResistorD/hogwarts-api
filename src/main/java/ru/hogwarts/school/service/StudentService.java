@@ -52,7 +52,7 @@ public class StudentService {
     }
 
     public Collection<Student> getAllStudents() {
-        return studentRepository.findAll();
+        return (Collection<Student>) studentRepository.findAll();
     }
 
     public Collection<Student> findStudentsByAge(int age) {
@@ -68,4 +68,17 @@ public class StudentService {
                 .map(Student::getFaculty)
                 .orElse(null);
     }
+
+    public long getStudentsCount() {
+        return studentRepository.getStudentsCount();
+    }
+
+    public double getAverageAge() {
+        return studentRepository.getAverageAge();
+    }
+
+    public List<Student> getLastFiveStudents() {
+        return studentRepository.getLastFiveStudents();
+    }
+
 }
