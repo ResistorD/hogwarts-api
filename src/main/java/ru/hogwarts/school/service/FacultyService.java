@@ -1,8 +1,10 @@
 package ru.hogwarts.school.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.FacultyRepository;
@@ -15,50 +17,74 @@ import java.util.Optional;
 @Service
 public class FacultyService {
 
+    private static final Logger logger = LoggerFactory.getLogger(FacultyService.class);
+
     private final FacultyRepository facultyRepository;
     private final StudentRepository studentRepository;
     private final StudentService studentService;
 
-    @Autowired
     public FacultyService(FacultyRepository facultyRepository,
                           StudentRepository studentRepository,
-                          @Lazy StudentService studentService) {
+                          StudentService studentService) {
         this.facultyRepository = facultyRepository;
         this.studentRepository = studentRepository;
         this.studentService = studentService;
     }
 
     public Faculty createFaculty(Faculty faculty) {
+        logger.info("Was invoked method for create faculty: name={}, color={}",
+                faculty.getName(), faculty.getColor());
+        logger.debug("createFaculty payload: {}", faculty);
         return facultyRepository.save(faculty);
     }
 
     public Faculty readFaculty(Long id) {
-        return facultyRepository.findById(id).orElse(null);
+        logger.info("Was invoked method for read faculty by id={}", id);
+        return facultyRepository.findById(id)
+                .orElseThrow(() -> {
+                    logger.error("There is no faculty with id={}", id);
+                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "Faculty not found: " + id);
+                });
     }
 
     public Faculty updateFaculty(Faculty faculty) {
         Long facultyId = faculty.getId();
+        logger.info("Was invoked method for update faculty id={}", facultyId);
+        logger.debug("updateFaculty payload: {}", faculty);
+
         if (!facultyRepository.existsById(facultyId)) {
-            throw new IllegalArgumentException("Faculty not found with id: " + facultyId);
+            logger.error("There is no faculty with id={} for update", facultyId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Faculty not found: " + facultyId);
         }
         return facultyRepository.save(faculty);
     }
 
     public void deleteFaculty(Long id) {
+        logger.warn("Was invoked method for delete faculty id={}", id);
+        if (!facultyRepository.existsById(id)) {
+            logger.error("There is no faculty with id={} for delete", id);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Faculty not found: " + id);
+        }
         facultyRepository.deleteById(id);
     }
 
     public Collection<Faculty> findFacultiesByColor(String color) {
+        logger.debug("Was invoked method for find faculties by color={}", color);
         return facultyRepository.findAllByColorIgnoreCase(color);
     }
 
     public List<Student> getStudentsByFaculty(Long id) {
-        Faculty faculty = facultyRepository.findById(id).orElse(null);
-        if (faculty == null) return List.of();
+        logger.debug("Was invoked method for get students by faculty id={}", id);
+        Faculty faculty = facultyRepository.findById(id)
+                .orElseThrow(() -> {
+                    logger.error("There is no faculty with id={} to read students", id);
+                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "Faculty not found: " + id);
+                });
         return faculty.getStudents();
     }
 
     public Optional<Faculty> findFacultyByColorOrName(String colorOrName) {
+        logger.debug("Was invoked method for find faculty by color or name: value={}", colorOrName);
         return facultyRepository.findFirstByColorIgnoreCaseOrNameIgnoreCase(colorOrName, colorOrName);
     }
 }
