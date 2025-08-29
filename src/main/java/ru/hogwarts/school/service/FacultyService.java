@@ -1,7 +1,6 @@
 package ru.hogwarts.school.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -14,10 +13,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class FacultyService {
-
-    private static final Logger logger = LoggerFactory.getLogger(FacultyService.class);
 
     private final FacultyRepository facultyRepository;
     private final StudentRepository studentRepository;
@@ -32,59 +30,58 @@ public class FacultyService {
     }
 
     public Faculty createFaculty(Faculty faculty) {
-        logger.info("Was invoked method for create faculty: name={}, color={}",
-                faculty.getName(), faculty.getColor());
-        logger.debug("createFaculty payload: {}", faculty);
+        log.info("Was invoked method for create faculty: name={}, color={}", faculty.getName(), faculty.getColor());
+        log.debug("createFaculty payload: {}", faculty);
         return facultyRepository.save(faculty);
     }
 
     public Faculty readFaculty(Long id) {
-        logger.info("Was invoked method for read faculty by id={}", id);
+        log.info("Was invoked method for read faculty by id={}", id);
         return facultyRepository.findById(id)
                 .orElseThrow(() -> {
-                    logger.error("There is no faculty with id={}", id);
+                    log.error("There is no faculty with id={}", id);
                     return new ResponseStatusException(HttpStatus.NOT_FOUND, "Faculty not found: " + id);
                 });
     }
 
     public Faculty updateFaculty(Faculty faculty) {
         Long facultyId = faculty.getId();
-        logger.info("Was invoked method for update faculty id={}", facultyId);
-        logger.debug("updateFaculty payload: {}", faculty);
+        log.info("Was invoked method for update faculty id={}", facultyId);
+        log.debug("updateFaculty payload: {}", faculty);
 
         if (!facultyRepository.existsById(facultyId)) {
-            logger.error("There is no faculty with id={} for update", facultyId);
+            log.error("There is no faculty with id={} for update", facultyId);
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Faculty not found: " + facultyId);
         }
         return facultyRepository.save(faculty);
     }
 
     public void deleteFaculty(Long id) {
-        logger.warn("Was invoked method for delete faculty id={}", id);
+        log.warn("Was invoked method for delete faculty id={}", id);
         if (!facultyRepository.existsById(id)) {
-            logger.error("There is no faculty with id={} for delete", id);
+            log.error("There is no faculty with id={} for delete", id);
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Faculty not found: " + id);
         }
         facultyRepository.deleteById(id);
     }
 
     public Collection<Faculty> findFacultiesByColor(String color) {
-        logger.debug("Was invoked method for find faculties by color={}", color);
+        log.debug("Was invoked method for find faculties by color={}", color);
         return facultyRepository.findAllByColorIgnoreCase(color);
     }
 
     public List<Student> getStudentsByFaculty(Long id) {
-        logger.debug("Was invoked method for get students by faculty id={}", id);
+        log.debug("Was invoked method for get students by faculty id={}", id);
         Faculty faculty = facultyRepository.findById(id)
                 .orElseThrow(() -> {
-                    logger.error("There is no faculty with id={} to read students", id);
+                    log.error("There is no faculty with id={} to read students", id);
                     return new ResponseStatusException(HttpStatus.NOT_FOUND, "Faculty not found: " + id);
                 });
         return faculty.getStudents();
     }
 
     public Optional<Faculty> findFacultyByColorOrName(String colorOrName) {
-        logger.debug("Was invoked method for find faculty by color or name: value={}", colorOrName);
+        log.debug("Was invoked method for find faculty by color or name: value={}", colorOrName);
         return facultyRepository.findFirstByColorIgnoreCaseOrNameIgnoreCase(colorOrName, colorOrName);
     }
 }

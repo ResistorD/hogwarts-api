@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.hogwarts.school.model.Faculty;
@@ -18,15 +18,14 @@ import java.util.Optional;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SuppressWarnings("removal")
 @WebMvcTest(FacultyController.class)
 class FacultyControllerWebMvcTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
-
+    @MockitoBean
+    @SuppressWarnings("unused") // поле заполняется контейнером, а не вручную
     private FacultyService facultyService;
 
     @Autowired
@@ -45,7 +44,7 @@ class FacultyControllerWebMvcTest {
         mockMvc.perform(post("/faculty")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(faculty)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("Gryffindor"))
                 .andExpect(jsonPath("$.color").value("red"));
@@ -87,13 +86,13 @@ class FacultyControllerWebMvcTest {
     }
 
     @Test
-    void deleteFaculty_shouldReturnOkStatus() throws Exception {
+    void deleteFaculty_shouldReturnNoContentStatus() throws Exception {
         Long id = 1L;
 
         Mockito.doNothing().when(facultyService).deleteFaculty(id);
 
         mockMvc.perform(delete("/faculty/{id}", id))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     @Test
@@ -161,5 +160,4 @@ class FacultyControllerWebMvcTest {
                 .andExpect(jsonPath("$.name").value("Slytherin"))
                 .andExpect(jsonPath("$.color").value("green"));
     }
-
 }
