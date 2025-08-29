@@ -61,4 +61,10 @@ public class FacultyController {
         return facultyService.findFacultyByColorOrName(value)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Faculty not found by: " + value));
     }
+
+    @GetMapping("/longest-name")
+    @ResponseStatus(HttpStatus.OK)
+    public String getLongestFacultyName() {
+        return facultyService.getLongestFacultyName();
+    }
 }

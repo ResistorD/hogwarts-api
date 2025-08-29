@@ -18,6 +18,7 @@ public class StudentController {
         this.studentService = studentService;
     }
 
+    // ---------- CRUD ----------
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED) // 201
     public Student createStudent(@RequestBody Student student) {
@@ -42,6 +43,7 @@ public class StudentController {
         studentService.deleteStudent(id);
     }
 
+    // ---------- Queries ----------
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public Collection<Student> getAllStudents() {
@@ -64,5 +66,20 @@ public class StudentController {
     @ResponseStatus(HttpStatus.OK)
     public Faculty getFacultyByStudentId(@PathVariable Long id) {
         return studentService.getFacultyByStudent(id);
+    }
+
+    // ---------- HW 4.5 ----------
+    /** Список имён на «A/А» в верхнем регистре и отсортированный */
+    @GetMapping("/names/a")
+    @ResponseStatus(HttpStatus.OK)
+    public List<String> getNamesStartingWithA() {
+        return studentService.getStudentsNamesStartingWithAUpperSorted();
+    }
+
+    /** Средний возраст всех студентов */
+    @GetMapping("/age/average")
+    @ResponseStatus(HttpStatus.OK)
+    public double getAverageAge() {
+        return studentService.getAverageAge();
     }
 }
