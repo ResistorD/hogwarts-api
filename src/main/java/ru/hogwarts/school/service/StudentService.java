@@ -10,7 +10,10 @@ import ru.hogwarts.school.repository.FacultyRepository;
 import ru.hogwarts.school.repository.StudentRepository;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,6 +27,7 @@ public class StudentService {
         this.facultyRepository = facultyRepository;
     }
 
+    // ---------- CRUD ----------
     public Student createStudent(Student student) {
         log.info("Was invoked method for create student: name={}, age={}", student.getName(), student.getAge());
         log.debug("createStudent payload: {}", student);
@@ -77,6 +81,7 @@ public class StudentService {
         studentRepository.deleteById(id);
     }
 
+    // ---------- Queries ----------
     public Collection<Student> getAllStudents() {
         log.debug("Was invoked method for get all students");
         return studentRepository.findAll();
@@ -100,5 +105,27 @@ public class StudentService {
                     log.error("There is no student with id={} to read faculty", studentId);
                     return new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found: " + studentId);
                 });
+    }
+
+    // ---------- HW 4.5 ----------
+    /** Список имён студентов, начинающихся на «A/А», в ВЕРХНЕМ регистре и отсортированный */
+    public List<String> getStudentsNamesStartingWithAUpperSorted() {
+        log.debug("Was invoked method for get names starting with A/А");
+        return studentRepository.findAll().stream()
+                .map(Student::getName)
+                .filter(name -> name != null && !name.isBlank())
+                .map(name -> name.toUpperCase(Locale.ROOT))
+                .filter(upper -> upper.startsWith("A") || upper.startsWith("А"))
+                .sorted(Comparator.naturalOrder())
+                .collect(Collectors.toList());
+    }
+
+    /** Средний возраст всех студентов */
+    public double getAverageAge() {
+        log.debug("Was invoked method for get average age");
+        return studentRepository.findAll().stream()
+                .mapToInt(Student::getAge)
+                .average()
+                .orElse(0.0);
     }
 }

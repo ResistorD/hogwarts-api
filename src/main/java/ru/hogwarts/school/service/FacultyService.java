@@ -12,6 +12,7 @@ import ru.hogwarts.school.repository.StudentRepository;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Comparator;
 
 @Slf4j
 @Service
@@ -83,5 +84,13 @@ public class FacultyService {
     public Optional<Faculty> findFacultyByColorOrName(String colorOrName) {
         log.debug("Was invoked method for find faculty by color or name: value={}", colorOrName);
         return facultyRepository.findFirstByColorIgnoreCaseOrNameIgnoreCase(colorOrName, colorOrName);
+    }
+
+    public String getLongestFacultyName() {
+        return facultyRepository.findAll().stream()
+                .map(Faculty::getName)
+                .filter(n -> n != null)
+                .max(Comparator.comparingInt(String::length))
+                .orElse("");
     }
 }
