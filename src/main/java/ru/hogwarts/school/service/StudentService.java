@@ -128,4 +128,14 @@ public class StudentService {
                 .average()
                 .orElse(0.0);
     }
+
+    /** Печать 6 имён: 1-2 в главном потоке, 3-4 в одном параллельном, 5-6 в другом. */
+    public void printStudentsParallel() {
+
+    }
+
+    /** Та же раскладка, но с использованием синхронизированного метода печати. */
+    public void printStudentsSynchronized() {
+
+    }
 }
