@@ -1,22 +1,21 @@
 package ru.hogwarts.school.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.service.StudentService;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.util.List;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(StudentController.class)
 class StudentControllerWebMvcTest {
@@ -24,7 +23,8 @@ class StudentControllerWebMvcTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
+    @SuppressWarnings("unused") // поле заполняется контейнером, а не вручную
     private StudentService studentService;
 
     @Autowired
@@ -32,7 +32,7 @@ class StudentControllerWebMvcTest {
 
     @Test
     void getStudentById_shouldReturnStudent() throws Exception {
-        Student student = new Student(1L, "Harry Potter", 14, (Faculty) null);
+        Student student = new Student(1L, "Harry Potter", 14, null);
 
         Mockito.when(studentService.getStudent(1L)).thenReturn(student);
 
@@ -45,14 +45,14 @@ class StudentControllerWebMvcTest {
 
     @Test
     void createStudent_shouldReturnCreatedStudent() throws Exception {
-        Student student = new Student(1L, "Hermione Granger", 13, (Faculty) null);
+        Student student = new Student(1L, "Hermione Granger", 13, null);
 
         Mockito.when(studentService.createStudent(Mockito.any(Student.class))).thenReturn(student);
 
         mockMvc.perform(post("/student")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(student)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("Hermione Granger"))
                 .andExpect(jsonPath("$.age").value(13));
@@ -60,7 +60,7 @@ class StudentControllerWebMvcTest {
 
     @Test
     void updateStudent_shouldReturnUpdatedStudent() throws Exception {
-        Student student = new Student(1L, "Ronald Weasley", 15, (Faculty) null);
+        Student student = new Student(1L, "Ronald Weasley", 15, null);
 
         Mockito.when(studentService.updateStudent(Mockito.any(Student.class))).thenReturn(student);
 
@@ -74,19 +74,19 @@ class StudentControllerWebMvcTest {
     }
 
     @Test
-    void deleteStudent_shouldReturnOkStatus() throws Exception {
+    void deleteStudent_shouldReturnNoContentStatus() throws Exception {
         Long id = 1L;
 
         Mockito.doNothing().when(studentService).deleteStudent(id);
 
         mockMvc.perform(delete("/student/{id}", id))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     @Test
     void getStudentsByAge_shouldReturnFilteredStudents() throws Exception {
-        Student s1 = new Student(1L, "Luna Lovegood", 13, (Faculty) null);
-        Student s2 = new Student(2L, "Colin Creevey", 13, (Faculty) null);
+        Student s1 = new Student(1L, "Luna Lovegood", 13, null);
+        Student s2 = new Student(2L, "Colin Creevey", 13, null);
 
         Mockito.when(studentService.findStudentsByAge(13))
                 .thenReturn(List.of(s1, s2));
@@ -101,9 +101,8 @@ class StudentControllerWebMvcTest {
 
     @Test
     void getStudentsByAgeRange_shouldReturnStudentsInRange() throws Exception {
-        // Студенты с возрастами в диапазоне
-        Student s1 = new Student(1L, "Fred Weasley", 12, (Faculty) null);
-        Student s2 = new Student(2L, "George Weasley", 14, (Faculty) null);
+        Student s1 = new Student(1L, "Fred Weasley", 12, null);
+        Student s2 = new Student(2L, "George Weasley", 14, null);
 
         Mockito.when(studentService.findByAgeBetween(12, 14))
                 .thenReturn(List.of(s1, s2));
@@ -116,6 +115,4 @@ class StudentControllerWebMvcTest {
                 .andExpect(jsonPath("$[0].name").value("Fred Weasley"))
                 .andExpect(jsonPath("$[1].name").value("George Weasley"));
     }
-
-
 }
