@@ -131,11 +131,63 @@ public class StudentService {
 
     /** Печать 6 имён: 1-2 в главном потоке, 3-4 в одном параллельном, 5-6 в другом. */
     public void printStudentsParallel() {
+        var names = studentRepository.findAll().stream()
+                .map(Student::getName)
+                .filter(n -> n != null && !n.isBlank())
+                .limit(6)
+                .toList();
 
+        // 1-2 в основном потоке
+        names.stream().limit(2).forEach(n -> System.out.println(Thread.currentThread().getName() + " -> " + n));
+
+        // 3-4 в отдельном потоке
+        Thread t1 = new Thread(() ->
+                names.stream().skip(2).limit(2)
+                        .forEach(n -> System.out.println(Thread.currentThread().getName() + " -> " + n)),
+                "printer-1");
+
+        // 5-6 в ещё одном потоке
+        Thread t2 = new Thread(() ->
+                names.stream().skip(4).limit(2)
+                        .forEach(n -> System.out.println(Thread.currentThread().getName() + " -> " + n)),
+                "printer-2");
+
+        t1.start();
+        t2.start();
+        try {
+            t1.join();
+            t2.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    /** Синхронизированный метод печати одной строки (требование задания). */
+    private synchronized void printSync(String name) {
+        System.out.println(Thread.currentThread().getName() + " -> " + name);
     }
 
     /** Та же раскладка, но с использованием синхронизированного метода печати. */
     public void printStudentsSynchronized() {
+        var names = studentRepository.findAll().stream()
+                    .map(Student::getName)
+                    .filter(n -> n != null && !n.isBlank())
+                    .limit(6)
+                    .toList();
 
+        // 1-2 в основном потоке
+        names.stream().limit(2).forEach(this::printSync);
+
+        Thread t1 = new Thread(() -> names.stream().skip(2).limit(2).forEach(this::printSync), "sync-printer-1");
+        Thread t2 = new Thread(() -> names.stream().skip(4).limit(2).forEach(this::printSync), "sync-printer-2");
+
+        t1.start();
+        t2.start();
+        try {
+            t1.join();
+            t2.join();
+            } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 }
